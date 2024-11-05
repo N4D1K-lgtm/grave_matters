@@ -6,6 +6,8 @@ edition = "2021"
 
 [dependencies]
 bevy = { version = "0.14", features = ["wayland"] }
+tiny_bail = "0.4.2"
+winit = "0.30.5"
 rand = "0.8"
 # Compile low-severity logs out of native builds for performance.
 log = { version = "0.4", features = [
@@ -19,6 +21,12 @@ tracing = { version = "0.1", features = [
 ] }
 bevy_asset_loader = { version = "0.21", features = ["2d", "3d"] }
 leafwing-input-manager = "0.15.1"
+bevy_vox_scene = "0.15.0"
+bevy_atmosphere = "0.10.0"
+bevy_editor_pls = "0.10.0"
+bevy_dolly = "0.0.4"
+inventory = "0.3.15"
+color-eyre = "0.6.3"
 
 [features]
 default = [
