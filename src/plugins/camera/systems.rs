@@ -1,24 +1,40 @@
-use super::MainCamera;
+use super::{MainCamera, Rotates, UiCamera};
+use crate::prelude::{Layer, RenderLayerExt};
 use bevy::prelude::*;
-use bevy_dolly::prelude::*;
+use bevy::render::view::RenderLayers;
+use bevy_dolly::{drivers::follow::MovableLookAt, prelude::*};
 
-pub(super) fn setup(mut commands: Commands) {
+use std::f32::consts::PI;
+
+pub(super) fn setup_camera(mut commands: Commands) {
+    let start_pos = Vec3::new(0., 0., 0.);
+
     commands.spawn((
-        MainCamera, // The rig component tag
+        Name::new("Main Camera"),
+        MainCamera,
         Rig::builder()
-            .with(Position::new(Vec3::ZERO)) // Start position
-            // Adds a driver with the method rotate_yaw_pitch
-            .with(YawPitch::new().yaw_degrees(45.0).pitch_degrees(-30.0))
-            // Interpolation when the translation is updated, also known as smoothing
-            .with(Smooth::new_position(0.3))
-            // Interpolation when the rotation is updated (updated via the YawPitch driver)
-            .with(Smooth::new_rotation(0.3))
-            // Moves the camera point out in the Z direction and uses the position as the pivot
-            .with(Arm::new(Vec3::Z * 4.0))
+            .with(MovableLookAt::from_position_target(start_pos))
             .build(),
-        Camera3dBundle::default(),
+        Camera3dBundle {
+            transform: Transform::from_xyz(-2.0, 1., 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            ..default()
+        },
+        IsDefaultUiCamera,
     ));
 }
 
+pub(super) fn rotator_system(time: Res<Time>, mut query: Query<&mut Transform, With<Rotates>>) {
+    for mut transform in query.iter_mut() {
+        *transform = Transform::from_rotation(Quat::from_rotation_y(
+            (4.0 * PI / 20.0) * time.delta_seconds(),
+        )) * *transform;
+    }
+}
 
-fn
+pub(super) fn update_camera(q0: Query<&Transform, With<Rotates>>, mut q1: Query<&mut Rig>) {
+    let player = q0.single().to_owned();
+    let mut rig = q1.single_mut();
+
+    rig.driver_mut::<MovableLookAt>()
+        .set_position_target(player.translation, player.rotation);
+}
